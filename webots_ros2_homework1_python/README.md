@@ -15,7 +15,10 @@ TO INSTALL PACKAGE FOR ASSIGNMENT
 
 1. Set up environment variables for ROS
 
-<pre>source /opt/ros/humble/setup.bash</pre>
+Make sure to replace '/home/rpi/shared' with your own shared folder location
+<pre>source /opt/ros/humble/setup.bash
+export WEBOTS_SHARED_FOLDER=/Users/monicaherzog/shared:/home/rpi/shared
+</pre>
 
 2. Fork your own repository of f23_robotics (using web interface)
 
