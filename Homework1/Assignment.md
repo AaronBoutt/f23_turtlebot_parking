@@ -19,12 +19,12 @@ _Figure 1 Divides apartment into four search zones, each with the robot starting
 _Table 1 Position information for each zone. Replace the translation and rotation lines for each zone_
 
 
-| | **Position** | **Rotation** |
-| --- | --- | --- |
-| **Zone 1** | translation 7.6 3.5 .05 | rotation 0 0 1 0 |
-| **Zone 2** | translation 5.2 6 .05 | rotation 0 0 1 0 |
-| **Zone 3** | translation 1.8 6.3 .05 | rotation 0 0 1 -1.57 |
-| **Zone 4** | translation 0.96 0.492 .05 | rotation 0 0 1 0 |
+ | **Position** | **Rotation** 
+ --- | --- | --- 
+ **Zone 1** | translation 7.6 3.5 .05 | rotation 0 0 1 0 
+ **Zone 2** | translation 5.2 6 .05 | rotation 0 0 1 0 
+ **Zone 3** | translation 1.8 6.3 .05 | rotation 0 0 1 -1.57 
+ **Zone 4** | translation 0.96 0.492 .05 | rotation 0 0 1 0 
 
 
 
