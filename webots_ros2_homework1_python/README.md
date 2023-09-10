@@ -1,21 +1,9 @@
-***Homework 1: Part 2***
-
-**Links to ROS resources**
-Tutorials to complete: 
-1. https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools.html
-2. https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries.html
-
-Short video overview
-https://vimeo.com/639236696
-
-**Background Section**
+# Homework 1 ROS2 Notes
 
 
-TO INSTALL PACKAGE FOR ASSIGNMENT 
+### TO INSTALL PACKAGE FOR ASSIGNMENT 
 
-1. Set up environment variables for ROS
-
-Make sure to replace '/home/rpi/shared' with your own shared folder location
+1. Set up environment variables for ROS. Make sure to replace '/home/rpi/shared' with your own shared folder location
 <pre>source /opt/ros/humble/setup.bash
 export WEBOTS_SHARED_FOLDER=/Users/monicaherzog/shared:/home/rpi/shared
 </pre>
@@ -23,32 +11,28 @@ export WEBOTS_SHARED_FOLDER=/Users/monicaherzog/shared:/home/rpi/shared
 2. Fork your own repository of f23_robotics (using web interface)
 
 3. Clone your fork
-
 <pre>
 git clone <your github url for this repository>
 </pre>
 
 4. Make the package (for python, it really just installs the files
-
 <pre>
 cd f23_robotics
 colcon build
 </pre>
 
 5. Set up variables to use the package you just created
-
 <pre>
 source install/setup.bash
 </pre>
 
 6. Start webots simulation with connect back to ROS in the virtual machine
-
 <pre>
 ros2 launch webots_ros2_homework1_python f23_robotics_1_launch.py
 </pre>
 
 
-TEST THE CONNECTION BETWEEN ROS2 AND WEBOTS
+### TEST THE CONNECTION BETWEEN ROS2 AND WEBOTS
 
 Test the connection between webots and ROS, use a ROS based ASCII keyboard to move the simulated robot in Webots
 
@@ -66,7 +50,7 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 </pre>
 
 
-TO VISUALIZE LASER DATA
+### TO VISUALIZE LASER DATA
 
 1. Open another terminal
 
@@ -80,8 +64,13 @@ source install/setup.bash
 <pre>
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
 </pre>
-
 <pre>
   rviz2
+</pre>
+
+### RUN SAMPLE CONTROLLER
+
+<pre>
+ros2 run webots_ros2_homework1_python webots_ros2_homework1_python
 </pre>
 
