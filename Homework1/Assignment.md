@@ -18,7 +18,7 @@ _Figure 1 Divides apartment into four search zones, each with the robot starting
 
 _Table 1 Position information for each zone. Replace the translation and rotation lines for each zone_
 
-![Table of starting positions](./starting_pos.png)
+![Table of starting positions](./startingpos.png)
 
 ***Hand in a pdf report that includes:***
 
