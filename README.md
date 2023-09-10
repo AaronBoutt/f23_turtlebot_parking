@@ -1,10 +1,6 @@
-# f23_robotics
-Repository for UA CS460/560
+# Repository for UA CS460/560 - Fall 2023
 
-Repository for homework assignments
 
-***Assignment 1***
+***Homework Assignment 1***
 
-Part 1: Kinematics and Frames of Reference [Word docx](Homework1.docx)
-
-Part 2: [Webots/ROS2/Heuristic Search](webots_ros2_homework1_python/README.md)
+[Webots/ROS2/Heuristic Search](./Homework1/Assignment.md)
