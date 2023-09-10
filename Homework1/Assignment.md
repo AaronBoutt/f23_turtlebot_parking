@@ -12,23 +12,18 @@ _Figure 1 Divides apartment into four search zones, each with the robot starting
 
 1. You should start with the example ROS2 package webots\_ros2\_homework1\_python in the class ([github repository](https://github.com/monicadelaine/f23_robotics/tree/main)) . It is suggested you should fork this repository and clone it to your Ubuntu/ROS2 instance. Keep in mind other homework assignments will have needed files available in this repository.
 2. Simulated environment, simulated robot and starting locations are specified as text in the ../webots\_ros2\_homework1\_py/worlds/f23\_robotics\_1.wbt world file. This file can be updated by a text editor.
-3. Use [webots\_ros2\_homework1\_py]([../webots\_ros2\_homework1\_py/webots\_ros2\_homework1\_py/webots\_ros2\_homework1\_py](https://github.com/monicadelaine/f23_robotics/blob/main/webots_ros2_homework1_python/webots_ros2_homework1_python/webots_ros2_homework1_python.py)) as a starting point for your controller. You can use code online as an example, but you must cite any code you use. Your code cannot have any position specific code. However, you can create/persist local measurements or local timers within a trial.
+3. Use ([webots\_ros2\_homework1\_py](../webots_ros2_homework1_python/webots_ros2_homework1_python/webots_ros2_homework1_python.py)) as a starting point for your controller. You can use code online as an example, but you must cite any code you use. Your code cannot have any position specific code. However, you can create/persist local measurements or local timers within a trial.
 4. You will code and test your controller from specified starting points in each zone (see Table 1). To change the starting position, you should edit the world file and replace the translation and rotation specifications with the values in the table (Example of world file section to update in Figure 2).
 5. Your final controller should be tested using five trials from each position (for a total of 20 trials). A log of the robot positions in the robot frame for each trial should be created.
 
 _Table 1 Position information for each zone. Replace the translation and rotation lines for each zone_
 
 
- | **Position** | **Rotation** |
- 
+| **Position** | **Rotation** |
 | --- | --- | --- |
-
 | **Zone 1** | translation 7.6 3.5 .05 | rotation 0 0 1 0 |
-
 | **Zone 2** | translation 5.2 6 .05 | rotation 0 0 1 0 |
-
 | **Zone 3** | translation 1.8 6.3 .05 | rotation 0 0 1 -1.57 |
-
 | **Zone 4** | translation 0.96 0.492 .05 | rotation 0 0 1 0 |
 
 
