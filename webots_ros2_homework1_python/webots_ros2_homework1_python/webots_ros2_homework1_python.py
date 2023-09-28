@@ -133,9 +133,9 @@ class RandomWalk(Node):
         else:
             self.cmd.linear.x = 0.3
             if time_since_turn > self.random_turn_time:
-                self.cmd.angular.z = random.uniform(-4, 4)
+                self.cmd.angular.z = random.uniform(-3.5, 3.5)
                 self.last_turn_time_secs = time_secs
-            else
+            else:
                 self.cmd.linear.z = 0.0 #stop turning
                 
             self.publisher_.publish(self.cmd)
