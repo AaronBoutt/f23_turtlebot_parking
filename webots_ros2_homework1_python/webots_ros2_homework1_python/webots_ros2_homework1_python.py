@@ -9,6 +9,9 @@ from nav_msgs.msg import Odometry
 # import Quality of Service library, to set the correct profile and reliability in order to read sensor data.
 from rclpy.qos import ReliabilityPolicy, QoSProfile
 import math
+import time
+import random
+
 
 
 LINEAR_VEL = 0.22
