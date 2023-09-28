@@ -122,16 +122,16 @@ class RandomWalk(Node):
             else:
                 self.avoid_stall()
         elif front_lidar_min < LIDAR_AVOID_DISTANCE:
-                self.cmd.linear.x = 0.3
+                self.cmd.linear.x = LINEAR_VEL
                 if (right_lidar_min > left_lidar_min):
-                   self.cmd.angular.z = -0.8
+                   self.cmd.angular.z = -0.3
                 else:
-                   self.cmd.angular.z = 0.8
+                   self.cmd.angular.z = 0.3
                 self.publisher_.publish(self.cmd)
                 self.get_logger().info('Turning')
                 self.turtlebot_moving = True
         else:
-            self.cmd.linear.x = 0.8
+            self.cmd.linear.x = LINEAR_VEL
             if time_since_turn > self.random_turn_time:
                 self.cmd.angular.z = random.uniform(-3.5, 3.5)
                 self.last_turn_time_secs = time_secs
@@ -154,9 +154,9 @@ class RandomWalk(Node):
  
     def avoid_stall(self):
             if self.turtlebot_moving == False:
-                self.cmd.linear.x = -0.8 #reverse
+                self.cmd.linear.x = -LINEAR_VEL #reverse
                 self.get_logger().info('Reversing')
-                self.cmd.angular.z = random.uniform(-0.8, 0.8) #turn
+                self.cmd.angular.z = random.uniform(-0.3, 0.3) #turn
                 self.publisher_.publish(self.cmd)
                 self.turtlebot_moving = True
 
