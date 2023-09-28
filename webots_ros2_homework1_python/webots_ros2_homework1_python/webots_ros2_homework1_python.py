@@ -110,7 +110,7 @@ class RandomWalk(Node):
         time_ns = self.get_clock().now().nanoseconds
         time_secs = time_ns / 1e9
         time_since_turn = time_secs - self.last_turn_time_secs
-        self.random_turn_time = random.randint(2, 7)
+        self.random_turn_time = random.randint(5, 10)
         
         if front_lidar_min < SAFE_STOP_DISTANCE:
             if self.turtlebot_moving == True:
@@ -133,7 +133,7 @@ class RandomWalk(Node):
         else:
             self.cmd.linear.x = LINEAR_VEL
             if time_since_turn > self.random_turn_time:
-                self.cmd.angular.z = random.uniform(-3.5, 3.5)
+                self.cmd.angular.z = random.uniform(-.3, .3)
                 self.last_turn_time_secs = time_secs
             else:
                 self.cmd.linear.z = 0.0 #stop turning
