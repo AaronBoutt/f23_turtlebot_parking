@@ -156,7 +156,7 @@ class RandomWalk(Node):
             if self.turtlebot_moving == False:
                 self.cmd.linear.x = -0.8 #reverse
                 self.get_logger().info('Reversing')
-                self.cmd.angular.z = random.uniform(-0.3, 0.3) #turn
+                self.cmd.angular.z = random.uniform(-0.8, 0.8) #turn
                 self.publisher_.publish(self.cmd)
                 self.turtlebot_moving = True
 
