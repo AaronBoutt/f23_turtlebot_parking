@@ -152,13 +152,13 @@ class RandomWalk(Node):
         # Display the message on the console
         # self.get_logger().info('Publishing: "%s"' % self.cmd)
  
-def avoid_stall(self):
-        if self.turtlebot_moving == False:
-            self.cmd.linear.x = -0.8 #reverse
-            self.get_logger().info('Reversing')
-            self.cmd.angular.z = random.uniform(-0.3, 0.3) #turn
-            self.publisher_.publish(self.cmd)
-            self.turtlebot_moving = True
+    def avoid_stall(self):
+            if self.turtlebot_moving == False:
+                self.cmd.linear.x = -0.8 #reverse
+                self.get_logger().info('Reversing')
+                self.cmd.angular.z = random.uniform(-0.3, 0.3) #turn
+                self.publisher_.publish(self.cmd)
+                self.turtlebot_moving = True
 
 def main(args=None):
     # initialize the ROS communication
