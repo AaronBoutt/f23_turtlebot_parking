@@ -11,6 +11,11 @@ from rclpy.qos import ReliabilityPolicy, QoSProfile
 import math
 import time
 import random
+import csv
+import datetime
+#csv code inspired from https://www.scaler.com/topics/how-to-create-a-csv-file-in-python/
+timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+csv_file_path = f'position_data_{timestamp}.csv'  # Example: position_data_20230927153045.csv
 
 
 
@@ -79,6 +84,16 @@ class RandomWalk(Node):
         (qx, qy, qz, qw) = (orientation.x, orientation.y, orientation.z, orientation.w)
          # self.get_logger().info('self position: {},{},{}'.format(posx,posy,posz));
         # similarly for twist message if you need
+        with open(csv_file_path, mode='w', newline='') as csv_file:
+            position = msg2.pose.pose.position
+            # Create writer
+            csv_writer = csv.writer(csv_file)
+
+            # x,y,z from position
+            position_data = [position.x, position.y, position.z]
+
+            # Write to csv
+            csv_writer.writerow(position_data)
         self.pose_saved=position
         
         #Example of how to identify a stall..need better tuned position deltas; wheels spin and example fast
@@ -110,7 +125,7 @@ class RandomWalk(Node):
         time_ns = self.get_clock().now().nanoseconds
         time_secs = time_ns / 1e9
         time_since_turn = time_secs - self.last_turn_time_secs
-        self.random_turn_time = random.randint(3, 10)
+        self.random_turn_time = random.randint(3, 8)
         
         if front_lidar_min < SAFE_STOP_DISTANCE:
             if self.turtlebot_moving == True:
