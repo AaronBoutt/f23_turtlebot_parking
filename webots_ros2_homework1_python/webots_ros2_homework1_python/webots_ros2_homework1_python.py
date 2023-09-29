@@ -13,7 +13,8 @@ import time
 import random
 import csv
 import datetime
-#csv code inspired from https://www.scaler.com/topics/how-to-create-a-csv-file-in-python/
+# csv code inspired from https://www.scaler.com/topics/how-to-create-a-csv-file-in-python/
+# and https://www.freecodecamp.org/news/how-to-create-a-csv-file-in-python/
 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 csv_file_path = f'position_data_{timestamp}.csv'  # Example: position_data_20230927153045.csv
 
@@ -94,6 +95,9 @@ class RandomWalk(Node):
 
             # Write to csv
             csv_writer.writerow(position_data)
+
+            #Log positions
+            self.get_logger().info('self position: {}, {}, {}'.format(posx, posy, posz))
         self.pose_saved=position
         
         #Example of how to identify a stall..need better tuned position deltas; wheels spin and example fast
