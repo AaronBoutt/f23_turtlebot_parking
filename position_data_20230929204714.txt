@@ -1,6 +1,5 @@
-Robot LogTimestamp: 20230929204714
-
-Time (s),X Position (m),Y Position (m)
+Area 1 Starting Point 1
+X, Y
 0.0, 0.0
 0.0, 0.0
 0.0, 0.0
