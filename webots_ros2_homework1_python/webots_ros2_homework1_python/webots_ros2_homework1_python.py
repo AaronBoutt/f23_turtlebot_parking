@@ -16,7 +16,7 @@ import datetime
 # csv code inspired from https://www.scaler.com/topics/how-to-create-a-csv-file-in-python/
 # and https://www.freecodecamp.org/news/how-to-create-a-csv-file-in-python/
 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-csv_file_path = f'position_data_{timestamp}.csv'  # Example: position_data_20230927153045.csv
+csv_file_path = f'position_data_{timestamp}.txt'  # Example: position_data_20230927153045.csv
 
 
 
@@ -60,14 +60,11 @@ class RandomWalk(Node):
         self.random_turn_time = 0.0
         self.stall_start_time = None
         self.stall_timer = None
-        with open(csv_file_path, mode='w', newline='') as csv_file:
-                        # Create writer
-            csv_writer = csv.writer(csv_file)
-            # x,y,z from position
-            position_data = [self.pose_saved.x, self_pose_saved.y, self.pose_saved.z]
-
-            # Write to csv
-            csv_writer.writerow(position_data)
+     self.log_file = open(file_name, "w")
+        self.log_file.write("Robot Log")
+        self.log_file.write(f"Timestamp: {timestamp}\n\n")
+        self.log_file.write("Time (s),X Position (m),Y Position (m)\n")
+        
 
     def listener_callback1(self, msg1):
         #self.get_logger().info('scan: "%s"' % msg1.ranges)
@@ -93,10 +90,9 @@ class RandomWalk(Node):
         (qx, qy, qz, qw) = (orientation.x, orientation.y, orientation.z, orientation.w)
          # self.get_logger().info('self position: {},{},{}'.format(posx,posy,posz));
         # similarly for twist message if you need
-        position = msg2.pose.pose.position
-
+        self.log_file.write(f"{posx}, {posy}\n")
             #Log positions
-        self.get_logger().info('self position: {}, {}, {}'.format(posx, posy, posz))
+        #self.get_logger().info('self position: {}, {}, {}'.format(posx, posy, posz))
         self.pose_saved=position
         
         #Example of how to identify a stall..need better tuned position deltas; wheels spin and example fast
