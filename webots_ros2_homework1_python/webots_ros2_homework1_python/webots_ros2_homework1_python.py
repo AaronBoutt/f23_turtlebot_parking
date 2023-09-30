@@ -87,18 +87,18 @@ class RandomWalk(Node):
         (qx, qy, qz, qw) = (orientation.x, orientation.y, orientation.z, orientation.w)
          # self.get_logger().info('self position: {},{},{}'.format(posx,posy,posz));
         # similarly for twist message if you need
-            position = msg2.pose.pose.position
+        position = msg2.pose.pose.position
             # Create writer
 
             # x,y,z from position
-            position_data = [position.x, position.y, position.z]
+        position_data = [position.x, position.y, position.z]
 
             # Write to csv
-            csv_writer.writerow(position_data)
-            csv_writer.writerow(position_data)
+        csv_writer.writerow(position_data)
+        csv_writer.writerow(position_data)
 
             #Log positions
-            self.get_logger().info('self position: {}, {}, {}'.format(posx, posy, posz))
+        self.get_logger().info('self position: {}, {}, {}'.format(posx, posy, posz))
         self.pose_saved=position
         
         #Example of how to identify a stall..need better tuned position deltas; wheels spin and example fast
