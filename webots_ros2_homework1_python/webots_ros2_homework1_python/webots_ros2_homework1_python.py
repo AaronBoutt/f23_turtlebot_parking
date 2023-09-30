@@ -64,7 +64,7 @@ class RandomWalk(Node):
                         # Create writer
             csv_writer = csv.writer(csv_file)
             # x,y,z from position
-            position_data = [self.pose_saved.posx, self_pose_saved.posy, self.pose_saved.posz]
+            position_data = [self.pose_saved.x, self_pose_saved.y, self.pose_saved.z]
 
             # Write to csv
             csv_writer.writerow(position_data)
