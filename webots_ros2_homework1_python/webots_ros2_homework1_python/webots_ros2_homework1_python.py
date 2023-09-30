@@ -61,7 +61,13 @@ class RandomWalk(Node):
         self.stall_start_time = None
         self.stall_timer = None
         with open(csv_file_path, mode='w', newline='') as csv_file:
+                        # Create writer
+            csv_writer = csv.writer(csv_file)
+            # x,y,z from position
+            position_data = [self.pose_saved.posx, self_pose_saved.posy, self.pose_saved.posz]
 
+            # Write to csv
+            csv_writer.writerow(position_data)
 
     def listener_callback1(self, msg1):
         #self.get_logger().info('scan: "%s"' % msg1.ranges)
@@ -88,14 +94,6 @@ class RandomWalk(Node):
          # self.get_logger().info('self position: {},{},{}'.format(posx,posy,posz));
         # similarly for twist message if you need
         position = msg2.pose.pose.position
-            # Create writer
-        csv_writer = csv.writer(csv_file)
-            # x,y,z from position
-        position_data = [position.x, position.y, position.z]
-
-            # Write to csv
-        csv_writer.writerow(position_data)
-        csv_writer.writerow(position_data)
 
             #Log positions
         self.get_logger().info('self position: {}, {}, {}'.format(posx, posy, posz))
