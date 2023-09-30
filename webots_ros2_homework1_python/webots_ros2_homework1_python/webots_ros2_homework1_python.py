@@ -60,7 +60,7 @@ class RandomWalk(Node):
         self.random_turn_time = 0.0
         self.stall_start_time = None
         self.stall_timer = None
-     self.log_file = open(file_name, "w")
+        self.log_file = open(file_name, "w")
         self.log_file.write("Robot Log")
         self.log_file.write(f"Timestamp: {timestamp}\n\n")
         self.log_file.write("Time (s),X Position (m),Y Position (m)\n")
