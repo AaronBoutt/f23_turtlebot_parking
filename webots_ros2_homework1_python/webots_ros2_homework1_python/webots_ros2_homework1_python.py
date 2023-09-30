@@ -60,7 +60,7 @@ class RandomWalk(Node):
         self.random_turn_time = 0.0
         self.stall_start_time = None
         self.stall_timer = None
-        with open(csv_file_path, mode='w', newline='') as csv_file:
+        with open(csv_file_path, mode='ab', newline='') as csv_file:
 
     def listener_callback1(self, msg1):
         #self.get_logger().info('scan: "%s"' % msg1.ranges)
