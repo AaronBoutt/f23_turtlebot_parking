@@ -16,3 +16,4 @@ At first thought
      ** If so then park using arcs, else continue searching.
 
 We may also make the parking slot fixed so that the robot will not have to search for the spot
+I had started testing some stuff on another repo but decided to use this old one since it is cleaner.
