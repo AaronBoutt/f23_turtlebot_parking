@@ -1,190 +1,238 @@
 import rclpy
-# import the ROS2 python libraries
 from rclpy.node import Node
-# import the Twist module from geometry_msgs interface
 from geometry_msgs.msg import Twist
-# import the LaserScan module from sensor_msgs interface
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
-# import Quality of Service library, to set the correct profile and reliability in order to read sensor data.
 from rclpy.qos import ReliabilityPolicy, QoSProfile
-import math
+from std_msgs.msg import Empty
+import numpy as np
+from math import sin, cos, pi, atan2
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import time
-import random
-import csv
-import datetime
-# csv code inspired from https://www.scaler.com/topics/how-to-create-a-csv-file-in-python/
-# and https://www.freecodecamp.org/news/how-to-create-a-csv-file-in-python/
-timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-txt_file_path = f'position_data_{timestamp}.txt'  # Example: position_data_20230927153045.csv
+import sys
 
-
-
-LINEAR_VEL = 0.22
-STOP_DISTANCE = 0.2
-LIDAR_ERROR = 0.05
-LIDAR_AVOID_DISTANCE = 0.7
-SAFE_STOP_DISTANCE = STOP_DISTANCE + LIDAR_ERROR
-RIGHT_SIDE_INDEX = 270
-RIGHT_FRONT_INDEX = 210
-LEFT_FRONT_INDEX=150
-LEFT_SIDE_INDEX=90
-
-class RandomWalk(Node):
-
+class AutoParking(Node):
     def __init__(self):
-        # Initialize the publisher
-        super().__init__('random_walk_node')
-        self.scan_cleaned = []
-        self.stall = False
-        self.turtlebot_moving = False
-        self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
-        self.subscriber1 = self.create_subscription(
-            LaserScan,
-            '/scan',
-            self.listener_callback1,
-            QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT))
-        self.subscriber2 = self.create_subscription(
-            Odometry,
-            '/odom',
-            self.listener_callback2,
-            QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT))
-        self.laser_forward = 0
-        self.odom_data = 0
-        timer_period = 0.5
-        self.pose_saved=''
-        self.cmd = Twist()
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.last_turn_time_ns = self.get_clock().now().nanoseconds
-        self.last_turn_time_secs = self.last_turn_time_ns / 1e9
-        self.random_turn_time = 0.0
-        self.stall_start_time = None
-        self.stall_timer = None
-        self.log_file = open(txt_file_path, "w")
-        self.log_file.write("X, Y")
-        
+        super().__init__('AutoParking')
+        self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 1)
+        self.reset_pub = self.create_publisher(Empty, '/reset', 1)
+        self.scan_sub = self.create_subscription(LaserScan, '/scan', self.scan_callback, QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT))
+        self.odom_sub = self.create_subscription(Odometry, '/odom', self.odom_callback, QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT))
+        self.r = self.create_rate(10)  # Adjust the rate as needed
+        self.msg = LaserScan()
+        self.step = 0
+        self.twist = Twist()
+        self.reset = Empty()
+        self.rotation_point = None
+        self.theta = 0.0
 
-    def listener_callback1(self, msg1):
-        #self.get_logger().info('scan: "%s"' % msg1.ranges)
-        scan = msg1.ranges
-        self.scan_cleaned = []
-       
-        #self.get_logger().info('scan: "%s"' % scan)
-        # Assume 360 range measurements
-        for reading in scan:
-            if reading == float('Inf'):
-                self.scan_cleaned.append(3.5)
-            elif math.isnan(reading):
-                self.scan_cleaned.append(0.0)
-            else:
-            	self.scan_cleaned.append(reading)
+    def scan_callback(self, msg):
+        self.msg = msg
 
+    def odom_callback(self, odom):
+        yaw = self.quaternion(odom)
+        if self.step == 0:
+            scan_done, center_angle, start_angle, end_angle = self.scan_parking_spot()
 
-
-    def listener_callback2(self, msg2):
-        position = msg2.pose.pose.position
-        orientation = msg2.pose.pose.orientation
-        (posx, posy, posz) = (position.x, position.y, position.z)
-        (qx, qy, qz, qw) = (orientation.x, orientation.y, orientation.z, orientation.w)
-         # self.get_logger().info('self position: {},{},{}'.format(posx,posy,posz));
-        # similarly for twist message if you need
-        self.log_file.write(f"{posx}, {posy}\n")
-            #Log positions
-        #self.get_logger().info('self position: {}, {}, {}'.format(posx, posy, posz))
-        self.pose_saved=position
-        
-        #Example of how to identify a stall..need better tuned position deltas; wheels spin and example fast
-        #diffX = math.fabs(self.pose_saved.x- position.x)
-        #diffY = math.fabs(self.pose_saved.y - position.y)
-        #if (diffX < 0.0001 and diffY < 0.0001):
-           #self.stall = True
-        #else:
-           #self.stall = False
-           
-        return None
-        
-    def timer_callback(self):
-        if (len(self.scan_cleaned)==0):
-    	    self.turtlebot_moving = False
-    	    return
-    	    
-        #left_lidar_samples = self.scan_cleaned[LEFT_SIDE_INDEX:LEFT_FRONT_INDEX]
-        #right_lidar_samples = self.scan_cleaned[RIGHT_FRONT_INDEX:RIGHT_SIDE_INDEX]
-        #front_lidar_samples = self.scan_cleaned[LEFT_FRONT_INDEX:RIGHT_FRONT_INDEX]
-        
-        left_lidar_min = min(self.scan_cleaned[LEFT_SIDE_INDEX:LEFT_FRONT_INDEX])
-        right_lidar_min = min(self.scan_cleaned[RIGHT_FRONT_INDEX:RIGHT_SIDE_INDEX])
-        front_lidar_min = min(self.scan_cleaned[LEFT_FRONT_INDEX:RIGHT_FRONT_INDEX])
-
-        #self.get_logger().info('left scan slice: "%s"'%  min(left_lidar_samples))
-        #self.get_logger().info('front scan slice: "%s"'%  min(front_lidar_samples))
-        #self.get_logger().info('right scan slice: "%s"'%  min(right_lidar_samples))
-        time_ns = self.get_clock().now().nanoseconds
-        time_secs = time_ns / 1e9
-        time_since_turn = time_secs - self.last_turn_time_secs
-        self.random_turn_time = random.randint(3, 8)
-        
-        if front_lidar_min < SAFE_STOP_DISTANCE:
-            if self.turtlebot_moving == True:
-                self.cmd.linear.x = 0.0 
-                self.cmd.angular.z = 0.0 
-                self.publisher_.publish(self.cmd)
-                self.turtlebot_moving = False
-                self.get_logger().info('Stopping')
-            else:
-                self.avoid_stall()
-        elif front_lidar_min < LIDAR_AVOID_DISTANCE:
-                self.cmd.linear.x = LINEAR_VEL
-                if (right_lidar_min > left_lidar_min):
-                   self.cmd.angular.z = -0.3
+            if scan_done:
+                fining_spot, start_point, center_point, end_point = self.finding_spot_position(center_angle, start_angle, end_angle)
+                if fining_spot:
+                    self.theta = np.arctan2(start_point[1] - end_point[1], start_point[0] - end_point[0])
+                    print("=================================")
+                    print("|        |     x     |     y     |")
+                    print('| start  | {0:>10.3f}| {1:>10.3f}|'.format(start_point[0], start_point[1]))
+                    print('| center | {0:>10.3f}| {1:>10.3f}|'.format(center_point[0], center_point[1]))
+                    print('| end    | {0:>10.3f}| {1:>10.3f}|'.format(end_point[0], end_point[1]))
+                    print("=================================")
+                    print('| theta  | {0:.2f} deg'.format(np.rad2deg(self.theta)))
+                    print('| yaw    | {0:.2f} deg'.format(np.rad2deg(yaw)))
+                    print("=================================")
+                    print("===== Go to parking spot!!! =====")
+                    self.step = 1
                 else:
-                   self.cmd.angular.z = 0.3
-                self.publisher_.publish(self.cmd)
-                self.get_logger().info('Turning')
-                self.turtlebot_moving = True
-        else:
-            self.cmd.linear.x = LINEAR_VEL
-            if time_since_turn > self.random_turn_time:
-                self.cmd.angular.z = random.uniform(-.8, .8)
-                self.last_turn_time_secs = time_secs
-            else:
-                self.cmd.linear.z = 0.0 #stop turning
-                
-            self.publisher_.publish(self.cmd)
-            self.turtlebot_moving = True
-            
+                    print("Fail finding parking spot.")
 
-        self.get_logger().info('Distance of the obstacle : %f' % front_lidar_min)
-       	# self.get_logger().info('I receive: "%s"' %
-                               #str(self.odom_data))
-        if self.stall == True:
-           self.get_logger().info('Stall reported')
-           self.avoid_stall()
-        
-        # Display the message on the console
-        # self.get_logger().info('Publishing: "%s"' % self.cmd)
- 
-    def avoid_stall(self):
-            if self.turtlebot_moving == False:
-                self.cmd.linear.x = -LINEAR_VEL #reverse
-                self.get_logger().info('Reversing')
-                self.cmd.angular.z = random.uniform(-0.3, 0.3) #turn
-                self.publisher_.publish(self.cmd)
-                self.turtlebot_moving = True
+        elif self.step == 1:
+            init_yaw = yaw
+            yaw = self.theta + yaw
+            if self.theta > 0:
+                if self.theta - init_yaw > 0.1:
+                    self.twist.linear.x = 0.0
+                    self.twist.angular.z = 0.2
+                else:
+                    self.twist.linear.x = 0.0
+                    self.twist.angular.z = 0.0
+                    self.cmd_pub.publish(self.twist)
+                    time.sleep(1)
+                    self.reset_pub.publish(self.reset)
+                    time.sleep(3)
+                    self.rotation_point = self.rotate_origin_only(center_point[0], center_point[1], -(pi / 2 - init_yaw))
+                    self.step = 2
+            else:
+                if self.theta - init_yaw < -0.1:
+                    self.twist.linear.x = 0.0
+                    self.twist.angular.z = -0.2
+                else:
+                    self.twist.linear.x = 0.0
+                    self.twist.angular.z = 0.0
+                    self.cmd_pub.publish(self.twist)
+                    time.sleep(1)
+                    self.reset_pub.publish(self.reset)
+                    time.sleep(3)
+                    self.rotation_point = self.rotate_origin_only(center_point[0], center_point[1], -(pi / 2 - init_yaw))
+                    self.step = 2
+
+        elif self.step == 2:
+            if abs(odom.pose.pose.position.x - (self.rotation_point[1])) > 0.02:
+                if odom.pose.pose.position.x > (self.rotation_point[1]):
+                    self.twist.linear.x = -0.05
+                    self.twist.angular.z = 0.0
+                else:
+                    self.twist.linear.x = 0.05
+                    self.twist.angular.z = 0.0
+            else:
+                self.twist.linear.x = 0.0
+                self.twist.angular.z = 0.0
+                self.step = 3
+
+        elif self.step == 3:
+            if yaw > -pi / 2:
+                self.twist.linear.x = 0.0
+                self.twist.angular.z = -0.2
+            else:
+                self.twist.linear.x = 0.0
+                self.twist.angular.z = 0.0
+                self.step = 4
+
+        elif self.step == 4:
+            ranges = []
+            for i in range(150, 210):
+                if self.msg.ranges[i] != 0:
+                    ranges.append(self.msg.ranges[i])
+            if min(ranges) > 0.2:
+                self.twist.linear.x = -0.04
+                self.twist.angular.z = 0.0
+            else:
+                self.twist.linear.x = 0.0
+                self.twist.angular.z = 0.0
+                print("Auto_parking Done.")
+                self.cmd_pub.publish(self.twist)
+                sys.exit()
+
+        self.cmd_pub.publish(self.twist)
+        self.scan_spot_filter(center_angle, start_angle, end_angle)
+
+    def scan_parking_spot(self):
+        intensity_index = []
+        index_count = []
+        spot_angle_index = []
+        minimum_scan_angle = 30
+        maximum_scan_angle = 330
+        intensity_threshold = 100
+        center_angle = 0
+        start_angle = 0
+        end_angle = 0
+
+        for i in range(360):
+            if minimum_scan_angle <= i < maximum_scan_angle:
+                spot_intensity = self.msg.intensities[i] ** 2 * self.msg.ranges[i] / 100000
+                if spot_intensity >= intensity_threshold:
+                    intensity_index.append(i)
+                    index_count.append(i)
+                else:
+                    intensity_index.append(0)
+            else:
+                intensity_index.append(0)
+
+        for i in index_count:
+            if abs(i - index_count[int(len(index_count) / 2)]) < 20:
+                spot_angle_index.append(i)
+                if len(spot_angle_index) > 10:
+                    center_angle = spot_angle_index[int(len(spot_angle_index) / 2)]
+                    start_angle = spot_angle_index[2]
+                    end_angle = spot_angle_index[-3]
+
+        return True, center_angle, start_angle, end_angle
+
+    def quaternion(self, odom):
+        quaternion = (
+            odom.pose.pose.orientation.x,
+            odom.pose.pose.orientation.y,
+            odom.pose.pose.orientation.z,
+            odom.pose.pose.orientation.w)
+        euler = euler_from_quaternion(quaternion)
+        yaw = euler[2]
+        return yaw
+
+    def get_angle_distance(self, angle):
+        distance = self.msg.ranges[int(angle)]
+        if self.msg.ranges[int(angle)] is not None and distance != 0:
+            angle = int(angle)
+            distance = distance
+        return angle, distance
+
+    def get_point(self, start_angle_distance):
+        angle = start_angle_distance[0]
+        angle = np.deg2rad(angle - 180)
+        distance = start_angle_distance[1]
+
+        if 0 <= angle < pi / 2:
+            x = distance * cos(angle) * -1
+            y = distance * sin(angle) * -1
+        elif pi / 2 <= angle < pi:
+            x = distance * cos(angle) * -1
+            y = distance * sin(angle) * -1
+        elif -pi / 2 <= angle < 0:
+            x = distance * cos(angle) * -1
+            y = distance * sin(angle) * -1
+        else:
+            x = distance * cos(angle) * -1
+            y = distance * sin(angle) * -1
+
+        return [x, y]
+
+    def finding_spot_position(self, center_angle, start_angle, end_angle):
+        print("scan parking spot done!")
+        finding_spot = False
+        start_angle_distance = self.get_angle_distance(start_angle)
+        center_angle_distance = self.get_angle_distance(center_angle)
+        end_angle_distance = self.get_angle_distance(end_angle)
+
+        if start_angle_distance[1] != 0 and center_angle_distance[1] != 0 and end_angle_distance[1] != 0:
+            print("calibration......")
+            start_point = self.get_point(start_angle_distance)
+            center_point = self.get_point(center_angle_distance)
+            end_point = self.get_point(end_angle_distance)
+            finding_spot = True
+        else:
+            finding_spot = False
+            print("wrong scan!!")
+
+        return finding_spot, start_point, center_point, end_point
+
+    def rotate_origin_only(self, x, y, radians):
+        xx = x * cos(radians) + y * sin(radians)
+        yy = -x * sin(radians) + y * cos(radians)
+        return xx, yy
+
+    def scan_spot_filter(self, center_angle, start_angle, end_angle):
+        scan_spot_pub = self.create_publisher(LaserScan, "/scan_spot", 1)
+        scan_spot = self.msg
+        scan_spot_list = list(scan_spot.intensities)
+        for i in range(360):
+            scan_spot_list[i] = 0
+        scan_spot_list[start_angle] = self.msg.ranges[start_angle] + 10000
+        scan_spot_list[center_angle] = self.msg.ranges[center_angle] + 10000
+        scan_spot_list[end_angle] = self.msg.ranges[end_angle] + 10000
+        scan_spot.intensities = tuple(scan_spot_list)
+        scan_spot_pub.publish(scan_spot)
 
 def main(args=None):
-    # initialize the ROS communication
     rclpy.init(args=args)
-    # declare the node constructor
-    random_walk_node = RandomWalk()
-    # pause the program execution, waits for a request to kill the node (ctrl+c)
-    rclpy.spin(random_walk_node)
-    # Explicity destroy the node
-    random_walk_node.destroy_node()
-    # shutdown the ROS communication
+    auto_parking = AutoParking()
+    rclpy.spin(auto_parking)
+    auto_parking.destroy_node()
     rclpy.shutdown()
-
-
 
 if __name__ == '__main__':
     main()
