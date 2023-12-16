@@ -11,9 +11,9 @@ This project is the mid-semester project for Intro to Autonomous Robotics in Fal
 ### Approach
 #### Goal
 
-  The goal is to program a robot to parallel park between two objects.
+  The goal is to program a robot to park between a designated parking space.
   
-  At the very least the goal is to be able to run parallel park a robot in simulation.
+  At the very least the goal is to be able to run park a robot in simulation.
   
   The best outcome is an implementation into an actual turtlebot.
 #### Implementation
@@ -30,12 +30,15 @@ This project is the mid-semester project for Intro to Autonomous Robotics in Fal
     
   Detection using LIDAR will be the main resource.
 
-  * LIDAR will detect an object in front and then the robot will begin to parallel park.
+  * LIDAR will detect an object and then the robot will begin to park.
     
-  * Sweeping arcs will be made until the robot is parked.
+  * Reflectivity will be used to detect the parking space
 
 #### External Resources
-  No resources at the moment.
+  [1]
+“turtlebot3_applications/turtlebot3_automatic_parking at master · ROBOTIS-GIT/turtlebot3_applications,” GitHub. https://github.com/ROBOTIS-GIT/turtlebot3_applications/tree/master/turtlebot3_automatic_parking (accessed Dec. 16, 2023).
+
+‌
 
   
   
